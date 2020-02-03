@@ -10,6 +10,7 @@ x-masysma-copyright: |
   Copyright (c) 2017, 2018 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
 x-masysma-repository: https://www.github.com/m7a/lp-banana-pi-m2p-edu
+x-masysma-website: https://masysma.lima-city.de/37/banana_pi_m2_plus_edu.xhtml
 x-masysma-owned: 1
 ---
 WARNING: Outdated
@@ -92,7 +93,7 @@ Kernel”, but there is no “hack” needed. Also, an additional variable calle
 
 `MA_HOOK_PREPARE`
 :   Contains code to be executed for preparation (e.g. providing `.tar.xz`
-    files).  This is set to `:` (or `true`) if not used.
+    files). This is set to `:` (or `true`) if not used.
 
 Be aware that unlike “Debian + Armbian Kernel”, this approach creates _four_
 containers which exchange intermediate results in form of `.tar.xz`-files.
@@ -234,7 +235,9 @@ provided.
 
 Having prepared as described, call the build as follows:
 
-	$ make MA_BS_CONF_PREFIX=my
+~~~
+$ make MA_BS_CONF_PREFIX=my
+~~~
 
 If you chose not to provide an own `myconf.mk`, a simple `make` is enough. 
 
@@ -263,7 +266,7 @@ Pi M2+EDU to the eternet network and then power on the Banana Pi M2+EDU and be
 patient for about 30 seconds. You should then see lights at the ethernet port.
 If not wait a little longer and if nothing happens, something is wrong.  Such
 issues are best debugged using the serial console, search the web for how to do
-this. 
+this.
 
 If the startup succeeded and you left that part of the default `hostconfig`
 intact, you might login at the Banana Pi M2+EDU using `ssh linux-fan@IP` with
@@ -271,7 +274,7 @@ password `testwort`. The IP address will be taken from DHCP – you may find out
 about it using `nmap -sn NETWORK` where NETWORK is your network like e. g.
 192.168.1.0/24.
 
-Additional notes and hints 
+Additional notes and hints
 
  * To delete intermediate results, call `make clean`. If you also want to remove
    the docker image used, use `make dist-clean` instead.
@@ -283,18 +286,20 @@ Getting to run Docker on the Banana Pi M2+EDU
 =============================================
 
 In order to run Docker on the Banana Pi M2+EDU, create a directory, e..g.
-`docker_arm` with these contents: 
+`docker_arm` with these contents:
 
-	fsroot/usr/bin/docker
-	fsroot/usr/bin/docker-proxy
-	fsroot/usr/bin/docker-containerd
-	fsroot/usr/bin/dockerd
-	fsroot/usr/bin/docker-containerd-ctr
-	fsroot/usr/bin/docker-runc
-	fsroot/usr/bin/docker-containerd-shim
-	fsroot/lib/systemd/system/docker.service
-	fsroot/lib/systemd/system/docker.socket
-	postinst.d/10_setup_docker.sh
+~~~
+fsroot/usr/bin/docker
+fsroot/usr/bin/docker-proxy
+fsroot/usr/bin/docker-containerd
+fsroot/usr/bin/dockerd
+fsroot/usr/bin/docker-containerd-ctr
+fsroot/usr/bin/docker-runc
+fsroot/usr/bin/docker-containerd-shim
+fsroot/lib/systemd/system/docker.service
+fsroot/lib/systemd/system/docker.socket
+postinst.d/10_setup_docker.sh
+~~~
 
 For `10_setup_docker.sh` you might want to use this:
 
@@ -307,7 +312,7 @@ Docker downloads.
 
 From the running system, it is then a matter of
 `systemctl enable docker.service && systemctl start docker.service`
-to get to run the docker daemon. 
+to get to run the docker daemon.
 
 Further Ideas
 =============
@@ -324,7 +329,7 @@ License
 =======
 
 The Ma_Sys.ma-contributed scripts to build Debian images for a Banana Pi M2+EDU
-are licensed under GPLv3. 
+are licensed under GPLv3.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
