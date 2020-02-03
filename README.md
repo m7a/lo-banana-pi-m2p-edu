@@ -7,7 +7,7 @@ lang: en-US
 date: 2017/03/31 16:21:44
 x-masysma-version: 1.0.2
 x-masysma-copyright: |
-  Copyright (c) 2017, 2018 Ma_Sys.ma.
+  Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
 x-masysma-repository: https://www.github.com/m7a/lp-banana-pi-m2p-edu
 x-masysma-website: https://masysma.lima-city.de/37/banana_pi_m2_plus_edu.xhtml
