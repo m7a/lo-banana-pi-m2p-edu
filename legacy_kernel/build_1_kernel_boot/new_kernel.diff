@@ -1,0 +1,16 @@
+diff --git a/Makefile b/Makefile
+index dbfdb56..4f4b9e8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -56,9 +56,10 @@ $(K_DOT_CONFIG): linux-sunxi
+ 	$(Q)$(MAKE) -C linux-sunxi ARCH=arm $(KERNEL_CONFIG)
+ 
+ kernel: $(K_DOT_CONFIG)
+-	$(Q)$(MAKE) -C linux-sunxi ARCH=arm CROSS_COMPILE=${K_CROSS_COMPILE} -j$J INSTALL_MOD_PATH=output uImage modules
++	$(Q)$(MAKE) -C linux-sunxi LOADADDR=0x40008000 ARCH=arm CROSS_COMPILE=${K_CROSS_COMPILE} -j$J INSTALL_MOD_PATH=output uImage
++	$(Q)$(MAKE) -C linux-sunxi ARCH=arm CROSS_COMPILE=${K_CROSS_COMPILE} -j$J INSTALL_MOD_PATH=output modules
+ 	$(Q)$(MAKE) -C linux-sunxi ARCH=arm CROSS_COMPILE=${K_CROSS_COMPILE} -j$J INSTALL_MOD_PATH=output modules_install
+-	$(Q)$(MAKE) -C linux-sunxi/modules/mali CROSS_COMPILE=$(K_CROSS_COMPILE) ARCH=arm LICHEE_KDIR=${LICHEE_KDIR} install
++	#$(Q)$(MAKE) -C linux-sunxi/modules/mali CROSS_COMPILE=$(K_CROSS_COMPILE) ARCH=arm LICHEE_KDIR=${LICHEE_KDIR} install
+ 	$(Q)$(MAKE) -C linux-sunxi ARCH=arm CROSS_COMPILE=${K_CROSS_COMPILE} -j$J headers_install
+ 	cd linux-sunxi && ${K_CROSS_COMPILE}objcopy -R .note.gnu.build-id -S -O binary vmlinux bImage
