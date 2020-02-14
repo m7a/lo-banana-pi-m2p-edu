@@ -5,7 +5,7 @@ title: Banana Pi M2+EDU Resources
 keywords: ["kb", "bananapi", "arm", "debian", "m2p", "blog", "bpi"]
 lang: en-US
 date: 2017/03/31 16:21:44
-x-masysma-version: 1.0.2
+x-masysma-version: 1.0.3
 x-masysma-copyright: |
   Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
@@ -13,45 +13,178 @@ x-masysma-repository: https://www.github.com/m7a/lp-banana-pi-m2p-edu
 x-masysma-website: https://masysma.lima-city.de/37/banana_pi_m2_plus_edu.xhtml
 x-masysma-owned: 1
 ---
-WARNING: Outdated
-=================
+WARNING: Work-in-Progress
+=========================
 
-As of today (2020/02/03), at least parts of the scripts have ceased to work.
+2020/02/l3: At least parts of the scripts have ceased to work.
 Additionally, there might by now be a means to build everything wholly on Debian
 resources, but the details of this have not been found out yet.
 
-For now, the original content has been retained below.
-
-## Files overview
-
-`armbian_and_debian`
-:   Files used to create images based on an armbian Kernel and a Debian OS.
-`legacy_kernel`
-:   Files used to create images based on the vendor-supplied Kernel and Debian.
+2020/02/14: New scripts are being developed. The document might be incomplete
+until the new scripts are tested properly.
 
 Introduction: Debian on the Banana Pi M2+EDU
 ============================================
 
 The Banana Pi M2+EDU is a cheap ARM board supporting Gigabit Ethernet. This
-article describes means of getting to run Debian (and Docker) on the Banana Pi
-M2+EDU.
+article describes means of getting to run Debian on the Banana Pi M2+EDU.
 
-Debian is the OS used for all Ma_Sys.ma computers and thus it seemed to be a
-good idea to attempt to get to run an _unmodified_ Debian on the Banana Pi
-M2+EDU as well.
+The approach presented here tries to get an installation as close to an
+_unmodified_ Debian as possible. In the past, this did not seem possible and
+thus, some minor deviations were accepted.
 
-This proved to be difficult and thus, some minor modifications were accepted in
-the end. Still, the result is closer to a “stock” Debian compared to most other
-approaches.
+Overview
+========
 
-### The necessity for a recent kernel 
+This document describes three distinct approaches:
 
-The first approach was to use the vendor-supplied tools in addition to a
-`debootstrap`-created Debian root directory (cf. section “Debian + Vendor
-Supplied Legacy Kernel”). This proved unable to run Docker and was thus
-replaced by the approach presented in “Debian + Armbian Kernel”.
+ 1. A new approach to use Debian without external sources.
+    The solution proposed here does not involve the Debian installer, but
+    relies on bootstrapping an image suitable to be copied onto a MicroSD
+    card which can then boot on the board.
+ 2. An old approach which involved the combination of a regular Debian with
+    u-boot and kernel taken from the armbian project. This approach should
+    still work, but makes upgrading the kernel and OS difficult.
+ 3. An old approach using the vendor-supplied kernel. This is by far the
+    tecnically “worst” variant, but it allows making use of some hardware
+    features which are not available by using the other approaches.
 
-These solutions to “Debian on the Banana Pi M2+EDU” currently exist:
+Note that both “old” approaches are accompanied by scripts whose (integrated
+or documented) download links may no longer work due to external updates. At
+least for the armbian-based approach it should be simple enough to adapt them.
+If you find updated links which work, feel free to send me an e-mail such that
+I can correct the description here, too.
+
+Useful online resources
+=======================
+
+Information on how to work with this single board computer is scattered
+around several sites. The following attempts to collect some useful links:
+
+_TODO MISSING_
+
+Introduction to the new approaches
+==================================
+
+The “new approach” relies solely on data provided through Debian. This allows
+for a very stable result and enables the maximum benefits which usually come
+with a Debian system: Easy upgrades between releases, security fixes etc.
+
+The scripts for this approach are found in directory `new_debian_only` and
+are intended to be invoked “in sequence“ as numbered. Build operations take
+place on a Debian host system (which need not be armhf) and rely on certain
+Debian packages to be present. By instantiating `mmdebstrap`, large part of
+the process runs without the need for `root` permissions if
+`unprivileged_userns_clone` is set to 1 (as performed by `s0_open_userns.sh`).
+
+All data is accumulated in a working directory `wd` which the user may delete
+after the build. In order to only rely on the “stable” featureset of
+`mmdebstrap`, all customizazion needs to happen through custom packages. An
+example for such a package (whose dependencies your own customizazion should
+always include!) is supplied in directory `package-sample`. If you are fine
+with the configuration it provides, you can also try using it without
+modifications.
+
+New: Debian without external sources
+====================================
+
+This new approach consists of three major stages:
+
+ 1. Preparation
+ 2. Building of a root filesystem
+ 3. Copying to the MicroSD card
+
+As parts of the steps need to run as root whereas others can run as a regular
+user, the scripts are divided into the following individual files:
+
+Dependencies
+:   The scripts have been tested to run on Debian stable (Debian Buster) and
+    require (at least) the following dependencies:
+    `ant`, `mmdebstrap`, `reprepro`, `python3`, `sfdisk`.
+
+`s0_open_userns.sh` (as root)
+:   Invokes `sysctl -w kernel.unprivileged_userns_clone=1` to allow the
+    next step to work without being root.
+`s1_generate.sh` (as user)
+:   Performs most of the preparation and builds a root filesystem in
+    output file `wd/fsroot.tar`. To set different variables (e.g. configure
+    mirror or Debian version, you can pass a script file as parameter which
+    is being sourced. See _Customization Variables_ below.
+`s2_write_to_disk.sh` (as root)
+:   Writes the prepared files to a MicroSD card. Note that in case you do not
+    want to rely on the automatism, it is perfectly reasonable to do the step
+    “by hand”. See the source code or the old instructions for
+    _Debian + armbian Kernel_ for ideas on how to do this.
+`s3_close_userns.sh`
+:   Reverts the setting performed in `s0`. It is a separate step to permit
+    skipping or delaying the actual `s2_write_to_disk.sh`. For maximum security,
+    execute this script directly after `s1_generate.sh`.
+
+The most complex part of the image generation (and the part which is likely to
+be wrong if the image does not boot!) is `s1_generate.sh` aka. the building of
+the root filesystem. Most of the work is delegated to `mmdebstrap`, but there
+are still numerous places to affect the execution. The following explains some
+common customization variables and gives a short idea on how further
+customization (like software selection and configuration files) are input into
+the process.
+
+## Customization Variables
+
+Relevant customization variables are as follows (defaults given behind `=`)
+
+`wd="$scriptroot/wd"`
+:   Specifies a “working directory“. This needs to have enough free space to
+    take all parts of the result image and should thus be reasonably large
+    (e.g. 3 GiB). It is recommended to follow the default. If not, the same
+    variable is also defined in `s2_write_to_disk.sh` and needs to be changed
+    as well.
+`tmp_port=9842`
+:   In order to supply a custom package to `mmdebstrap`, it is served from a
+    temporary repository using a temporarily running webserver (that's the
+    `python3` dependency by the way). This needs a free port on the host machine
+    (the webserver will only listen on the loopback interface). Most likely,
+    the default is OK here.
+`debian_version=buster`
+:   Configures the Debian release to use.
+`package_dir="$scriptroot/package-sample"`
+:   Gives a directory to build the customization package from.
+    Note: This is expected to contain MDPC 2.0/ant-based instructions to
+    build a package called `mdvl-banana-pi-m2-plus-edu-root`. It is recommended
+    to duplicate the existing `package-sample` and change the copy in case
+    an own customization package is needed.
+`mirror=http://ftp.it.debian.org/debian`
+:   Configures the Debian mirror to use. Security will always point to
+    `security.debian.org`.
+
+## Customization Package
+
+The customization package needs to take care that instead of only a “chroot“,
+the build procedure arrives at a bootable root filesystem. It thus needs to
+depend on kernel and other essential tools for running systems. Additionally,
+this package is responsible for providing essential configuration files like
+`/etc/network/interfaces` or `/etc/fstab`.
+
+The supplied `package-sample` directory contains the instructions for a package
+which creates an user `linux-fan` and sets passwords for `root` and `linux-fan`
+to `testwort`. It depends on `openssh-server` and hence allows the first
+interaction after successfully booting the new image to be a login through SSH
+as user `linux-fan` with password `testwort`. Note that it is recommended to
+change the passwords _after_ the package has set them because if one relies on
+the package for productive passwords, `linux-fan` can read `root`'s password
+from the DPKG status files (i.e. the `postinst` script is readable by all
+users...).
+
+Introduction to the old approaches
+==================================
+
+The “old approaches“ rely on a combination of Docker images and Makefiles. This
+allows the build process to be parallelized and should run on non-Debian host
+systems as well. On the downside, it is not always exactly obvious where the
+actual commands are stored. The documentation for the respective approaches
+still intends to shed some light on this.
+
+At the time of the creation of the “old” approaches, these solutions existed
+for Debian on a Banana Pi M2+EDU:
 
  * Debian-Images from the
    [official Banana Pi website](http://www.banana-pi.org/m2plus-download.html):
@@ -60,85 +193,19 @@ These solutions to “Debian on the Banana Pi M2+EDU” currently exist:
  * [armbian](https://www.armbian.com/banana-pi-m2-plus/):
    These images are of good quality and best if you want an image optimized for
    the ARM platform. They are, however, heavily customized and as of this
-   writing, there is no Debian + recent Kernel.
+   writing, there is no Debian + recent Kernel combination offered.
 
 If one is looking for an easy solution, the armbian-Images can be recommended.
 The following sections present an approach which comes closer to an unmodified
 Debian and allows maximum control over the packages present in the image.
 
 All of the approaches presented here, as well as the armbian images, work with
-microSD cards of any size (tested for 128 GB).
+microSD cards of any size (tested for 128 GB). Customizazion happens by
+supplying files in subdirectory `hostconfig` -- either in form of scripts or in
+form of files which are being copied to the target image.
 
-Debian + Vendor Supplied Legacy Kernel
-======================================
-
-Result
-:   This approach produces an image suited for a microSD card which contains a
-    Debian installation equipped with the officially supplied Banana Pi M2+
-    kernel. This supports HDMI and Gigabit Ethernet but is based on a kernel
-    3.4.39 and thus too old to run Docker.
-
-First, clone the repository as follows:
-
-	git clone https://github.com/m7a/lp-banana-pi-m2p-edu
-
-System requirements:
-
- * Docker
- * POSIX `make`
-
-Configuration is similar to the approach presented in section “Debian + Armbian
-Kernel”, but there is no “hack” needed. Also, an additional variable called
-`MA_HOOK_PREPARE` is available:
-
-`MA_HOOK_PREPARE`
-:   Contains code to be executed for preparation (e.g. providing `.tar.xz`
-    files). This is set to `:` (or `true`) if not used.
-
-Be aware that unlike “Debian + Armbian Kernel”, this approach creates _four_
-containers which exchange intermediate results in form of `.tar.xz`-files.
-External resources are downloaded in “step 0” if not already present in
-`$(WRKROOT)/in`.
-
-To run the build, use `make` as described in section “Debian + Armbian Kernel”.
-It makes sense to use `make -j10 ...` (or a larger number if you want to use
-more processes) to parallelize kernel and u-boot compilation.
-
-Partition the microSD card as follows:
-
-	100 MiB of leading free space
-	50 MiB of FAT32 storage (label=BPI-BOOT, flags=lba, boot)
-	XX MiB of EXT4 storage  (label=BPI-ROOT)
-	1024 MiB of SWAP storage
-
-Hint: To backup & restore the partition layout, use `sfdisk` as follows:
-
- * save: `sfdisk -d /dev/sdj > file`
- * restore: `sfdisk /dev/sdj < file`
- * This is of course only necessary if you want to re-create partitioning from a
-   previously partitioned microSD card.
-
-Run these commands (assuming `/dev/sdj` is your microSD card device node) to
-establsih the partition filesystems and labels. The flags will need to be set
-separately (e. g. with `gparted`).
-
-	mkdosfs -F 32 -n BPI-BOOT /dev/sdj1
-	mkfs.ext4 -L BPI-ROOT /dev/sdj2
-	mkswap /dev/sdj3
-
-Once the build has completed successfully, use the resulting files from below
-`$(WRKROOT)/out` as follows (assuming `/dev/sdj` is your microSD card device
-node):
-
-`f100mod.img.xz`
-:   `unxz < f100mod.img.xz | dd bs=1k seek=8 skip=8 of=device`
-`fat32.tar.xz`
-:   `mount /dev/sdj1 /mnt && tar -C /mnt -xpf fat32.tar.xz && umount /mnt`
-`ext4.tar.xz`
-:   `mount /dev/sdj2 /mnt && tar -C /mnt -xpf ext4.tar.xz && umount /mnt`
-
-Debian + Armbian Kernel
-=======================
+Old: Combination Debian + Armbian Kernel
+========================================
 
 Result
 :   This approach produces an image suited for a microSD card which contains a
@@ -282,10 +349,84 @@ Additional notes and hints
    in the Makefile `build_inside.mk` which is called from inside the container
    (but outside the target root filesystem).
 
-Getting to run Docker on the Banana Pi M2+EDU
-=============================================
+Old: Debian + Vendor-Supplied legacy Kernel
+===========================================
 
-In order to run Docker on the Banana Pi M2+EDU, create a directory, e..g.
+Files or this approach can be found in directory `legacy_kernel`.
+
+Result
+:   This approach produces an image suited for a microSD card which contains a
+    Debian installation equipped with the officially supplied Banana Pi M2+
+    kernel. This supports HDMI and Gigabit Ethernet but is based on a kernel
+    3.4.39 and thus e.g. too old to run Docker.
+
+First, clone the repository as follows:
+
+	git clone https://github.com/m7a/lp-banana-pi-m2p-edu
+
+System requirements:
+
+ * Docker
+ * POSIX `make`
+
+Configuration is similar to the approach presented in section “Debian + Armbian
+Kernel”, but there is no “hack” needed. Also, an additional variable called
+`MA_HOOK_PREPARE` is available:
+
+`MA_HOOK_PREPARE`
+:   Contains code to be executed for preparation (e.g. providing `.tar.xz`
+    files). This is set to `:` (or `true`) if not used.
+
+Be aware that unlike “Debian + Armbian Kernel”, this approach creates _four_
+containers which exchange intermediate results in form of `.tar.xz`-files.
+External resources are downloaded in “step 0” if not already present in
+`$(WRKROOT)/in`.
+
+To run the build, use `make` as described in section “Debian + Armbian Kernel”.
+It makes sense to use `make -j10 ...` (or a larger number if you want to use
+more processes) to parallelize kernel and u-boot compilation.
+
+Partition the microSD card as follows:
+
+	100 MiB of leading free space
+	50 MiB of FAT32 storage (label=BPI-BOOT, flags=lba, boot)
+	XX MiB of EXT4 storage  (label=BPI-ROOT)
+	1024 MiB of SWAP storage
+
+Hint: To backup & restore the partition layout, use `sfdisk` as follows:
+
+ * save: `sfdisk -d /dev/sdj > file`
+ * restore: `sfdisk /dev/sdj < file`
+ * This is of course only necessary if you want to re-create partitioning from a
+   previously partitioned microSD card.
+
+Run these commands (assuming `/dev/sdj` is your microSD card device node) to
+establsih the partition filesystems and labels. The flags will need to be set
+separately (e. g. with `gparted`).
+
+	mkdosfs -F 32 -n BPI-BOOT /dev/sdj1
+	mkfs.ext4 -L BPI-ROOT /dev/sdj2
+	mkswap /dev/sdj3
+
+Once the build has completed successfully, use the resulting files from below
+`$(WRKROOT)/out` as follows (assuming `/dev/sdj` is your microSD card device
+node):
+
+`f100mod.img.xz`
+:   `unxz < f100mod.img.xz | dd bs=1k seek=8 skip=8 of=device`
+`fat32.tar.xz`
+:   `mount /dev/sdj1 /mnt && tar -C /mnt -xpf fat32.tar.xz && umount /mnt`
+`ext4.tar.xz`
+:   `mount /dev/sdj2 /mnt && tar -C /mnt -xpf ext4.tar.xz && umount /mnt`
+
+Old: Getting to run Docker on the Banana Pi M2+EDU
+==================================================
+
+From 2020 and onwards, this should no longer be necessary. Now-stable Debian
+Buster provides docker.io packages which can be installed through apt. Hence
+there is no need to provide Docker through separate files.
+
+In order to run Docker on the Banana Pi M2+EDU, create a directory, e.g.
 `docker_arm` with these contents:
 
 ~~~
@@ -313,17 +454,6 @@ Docker downloads.
 From the running system, it is then a matter of
 `systemctl enable docker.service && systemctl start docker.service`
 to get to run the docker daemon.
-
-Further Ideas
-=============
-
-In the future, the system presented here should be incorporated into an MDVL
-build process and customization should not be done using `fsroot` and
-`postinst.d` but with Debian packages instead.
-
-Also, tests of all the different variants should be performed and code to
-enable newer kernels (which never worked) should be removed from the legacy
-build system.
 
 License
 =======

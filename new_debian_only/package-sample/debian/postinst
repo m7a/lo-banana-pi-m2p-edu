@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+if [ "$1" = install ]; then
+	if ! grep -qE '^root:\$' /etc/shadow; then
+		echo setting root password...
+		( echo testwort; echo testwort ) | passwd
+	fi
+	if ! grep -qF linux-fan /etc/passwd; then
+		echo adding user linux-fan
+		useradd -m linux-fan
+		( echo testwort; echo testwort ) | passwd linux-fan
+	fi
+fi

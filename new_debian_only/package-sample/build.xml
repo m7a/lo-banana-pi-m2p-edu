@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="build">
+
+<!-- APPLICATION METADATA -->
+<property name="mdpc.name"      value="mdvl-banana-pi-m2-plus-edu-root"/>
+<property name="mdpc.section"   value="admin"/>
+<property name="mdpc.arch"      value="all"/>
+<property name="mdpc.depends"   value="sunxi-tools, firmware-linux, debconf, locales, u-boot-sunxi, u-boot, u-boot-tools, openssh-server, aptitude, vim, docker.io, linux-image-4.19.0-6-armmp-lpae"/>
+<property name="mdpc.descrs"    value="system management root package"/>
+<property name="mdpc.descrl">
+ Root package for Banana Pi M2+EDU system.
+ Pulls in all system essential packages.
+</property>
+
+<property name="mdpc.file.displace">
+/etc/resolv.conf.mdvl
+/etc/fstab.mdvl
+/etc/hostname.mdvl
+/etc/network/interfaces.mdvl
+</property>
+
+<property name="mdpc.file.install">
+resolv.conf.mdvl /etc
+fstab.mdvl /etc
+hostname.mdvl /etc
+interfaces.mdvl /etc/network
+</property>
+
+<!-- CONSTANT TPL IMPORT -->
+<property environment="env"/>
+<condition property="masysma.internal.includepath.rel" value="${env.MDVL_CI_PHOENIX_ROOT}" else="../../.."><isset property="env.MDVL_CI_PHOENIX_ROOT"/></condition>
+<property name="masysma.internal.includepath" location="${masysma.internal.includepath.rel}"/>
+<property name="masysma.internal.loadpath" value="${masysma.internal.includepath}/co-build/ant-build-template.xml"/>
+<condition property="masysma.internal.load" value="file://${masysma.internal.loadpath}" else="https://raw.githubusercontent.com/m7a/co-build/master/ant-build-template.xml"><resourceexists><file file="${masysma.internal.loadpath}"/></resourceexists></condition>
+<import><url url="${masysma.internal.load}"/></import>
+
+</project>
