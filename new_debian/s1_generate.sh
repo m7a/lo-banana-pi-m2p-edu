@@ -12,7 +12,8 @@ wd="$scriptroot/wd"
 tmp_port=9842
 debian_version=buster
 package_dir="$scriptroot/package-sample"
-mirror=http://ftp.it.debian.org/debian
+#mirror=http://ftp.it.debian.org/debian
+mirror=http://192.168.1.16/debian
 
 if [ "$1" = "--help" ]; then
 	echo "Usage $0 [conf-script]"

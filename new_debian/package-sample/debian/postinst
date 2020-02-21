@@ -10,4 +10,15 @@ if [ "$1" = install ]; then
 		useradd -m linux-fan
 		( echo testwort; echo testwort ) | passwd linux-fan
 	fi
+	echo bananapim2p > /etc/hostname
+	echo nameserver 8.8.4.4 > /etc/resolv.conf
+	cat > /etc/network/interfaces <<EOF
+auto lo
+iface lo inet loopback
+
+allow-hotplug eth0
+auto eth0
+iface eth0 inet dhcp
+EOF
+	/etc/kernel/postinst.d/y-masysma-gen-uboot-files
 fi

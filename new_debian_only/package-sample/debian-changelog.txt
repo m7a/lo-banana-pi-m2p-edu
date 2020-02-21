@@ -1,5 +1,0 @@
-mdvl-banana-pi-m2-plus-edu-root (1.0.0) stable; urgency=medium
-
-  * Package created with MDPC 2
-
- -- Linux-Fan, Ma_Sys.ma <Ma_Sys.ma@web.de>  Thu, 13 Feb 2020 18:28:06 +0100

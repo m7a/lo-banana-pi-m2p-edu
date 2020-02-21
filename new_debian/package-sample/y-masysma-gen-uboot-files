@@ -1,0 +1,57 @@
+#!/bin/sh -e
+# Ma_Sys.ma script to automatically generate uboot files on kernel upgrades,
+# Version 1.0.0, Copyright (c) 2020 Ma_Sys.ma.
+# For further info send an e-mail to Ma_Sys.ma@web.de.
+#
+# Upon updates, the following files need to be re-generated with updated data
+# /boot/boot.cmd, /boot/boot.scr, /boot/uImage-$kernelversion
+#
+# To obtain the contents for /boot/boot.cmd, a template file named
+# template_boot.cmd is being populated with updated values.
+#
+# Design Decision:
+# template_boot.cmd has an old configuration with a specific kernel version
+# that was once valid as to provide a very realistic example of what the file
+# will look like in the end.
+
+template=/etc/masysma_template_boot.cmd
+template_device=/dev/mmcblk0p1
+template_kernel=4.19.0-8-armmp-lpae
+
+new_kernel="$(find /boot -type f -maxdepth 1 \( -name 'vmlinuz-*' -or -name \
+	'initrd.img-*' \) | cut -d- -f 2- | sort -V | uniq -d | tail -n 1)"
+if [ -z "$new_kernel" ]; then
+	echo "Ma_Sys.ma gen-uboot-files: no kernel found -- no action."
+	exit 0
+fi
+pattern_template_kernel="$(echo "$template_kernel" | sed 's/\./\\./g')"
+echo "Ma_Sys.ma gen-uboot-files: newest kernel:  $new_kernel"
+
+new_device="$(sed -e 's/# .*$//g' -e 's/\s\+/ /g' < /etc/fstab | \
+					grep -F "/ ext4" | cut -d" " -f 1)"
+pattern_template_device="$(echo "$template_device" | sed 's/\\//\\\//g')"
+replacement_new_device="$(echo "$new_device" | sed 's/\\//\\\//g')"
+echo "Ma_Sys.ma gen-uboot-files: root fs device: $new_device"
+
+sed -e "s/$pattern_template_kernel/$new_kernel/g" \
+		-e "s/$pattern_template_device/$replacement_new_device/g" \
+		< "$template" > /boot/boot.cmd
+
+echo "Ma_Sys.ma gen-uboot-files: generating /boot/uInitrd-$new_kernel..."
+mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd \
+		-d "/boot/initrd.img-$new_kernel" "/boot/uInitrd-$new_kernel"
+
+echo "Ma_Sys.ma gen-uboot-files: generating /boot/boot.scr..."
+mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
+
+echo "Ma_Sys.ma gen-uboot-files: cleaning unused uInitrd files..."
+for uInitrd in /boot/uInitrd-*; do
+	kver="$(echo "$uInitrd" | cut -d- -f 2-)"
+	if ! [ -f "/boot/vmlinuz-$kver" ] && \
+					! [ -f "/boot/initrd.img-$kver" ]; then
+		echo "Ma_Sys.ma gen-uboot-files: rm $uInitrd"
+		rm "$uInitrd"
+	fi
+done
+
+echo "Ma_Sys.ma gen-uboot-files: complete."

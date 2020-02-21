@@ -5,7 +5,7 @@ title: Banana Pi M2+EDU Resources
 keywords: ["kb", "bananapi", "arm", "debian", "m2p", "blog", "bpi"]
 lang: en-US
 date: 2017/03/31 16:21:44
-x-masysma-version: 1.0.3
+x-masysma-version: 1.0.4
 x-masysma-copyright: |
   Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
@@ -105,6 +105,16 @@ Dependencies
 `s0_open_userns.sh` (as root)
 :   Invokes `sysctl -w kernel.unprivileged_userns_clone=1` to allow the
     next step to work without being root.
+
+If necessary, add your user to `/etc/subuid` and `/etc/subgid` if there is no
+entry for it yet. In my case, the following line had to be added to both files
+on one machine, but not on another:
+
+	linux-fan:689824:65536
+
+See <https://help.ubuntu.com/lts/serverguide/lxc.html#lxc-basic-usage>
+(section _User namespaces_) for details.
+
 `s1_generate.sh` (as user)
 :   Performs most of the preparation and builds a root filesystem in
     output file `wd/fsroot.tar`. To set different variables (e.g. configure
