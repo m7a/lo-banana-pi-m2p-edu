@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="build">
+<project default="build" xmlns:unless="ant:unless">
 
 <!-- APPLICATION METADATA -->
-<property name="mdpc.name"      value="mdvl-banana-pi-m2-plus-edu-root"/>
-<property name="mdpc.section"   value="admin"/>
-<property name="mdpc.arch"      value="all"/>
-<property name="mdpc.depends"   value="sunxi-tools, firmware-linux, debconf, locales, u-boot-sunxi, u-boot, u-boot-tools, openssh-server, aptitude, vim, docker.io, linux-image-armmp-lpae"/>
-<property name="mdpc.descrs"    value="system management root package"/>
+<property name="mdpc.name"    value="mdvl-banana-pi-m2-plus-edu-root"/>
+<property name="mdpc.section" value="admin"/>
+<property name="mdpc.arch"    value="all"/>
+<property name="mdpc.depends" value="sunxi-tools, firmware-linux, debconf, locales, u-boot-sunxi, u-boot, u-boot-tools, linux-image-armmp-lpae"/>
+<property name="mdpc.descrs"  value="system management root package"/>
 <property name="mdpc.descrl">
  Root package for Banana Pi M2+EDU system.
- Pulls in all system essential packages.
+ Pulls in all system essential packages and
+ provides hooks to enable successful kernel upgrades.
 </property>
 <property name="mdpc.file.install">
 masysma_template_boot.cmd /etc

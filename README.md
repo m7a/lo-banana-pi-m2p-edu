@@ -38,7 +38,7 @@ Overview
 
 This document describes three distinct approaches:
 
- 1. A new approach to use Debian without external sources.
+ 1. A new approach to use Debian with only minimal external sources.
     The solution proposed here does not involve the Debian installer, but
     relies on bootstrapping an image suitable to be copied onto a MicroSD
     card which can then boot on the board.
@@ -61,7 +61,9 @@ Useful online resources
 Information on how to work with this single board computer is scattered
 around several sites. The following attempts to collect some useful links:
 
-_TODO MISSING_
+ * [Basic u-boot configuration hints](https://www.get-edi.io/Booting-Debian-with-U-Boot/)
+ * Linux-Sunxi u-boot configuration: [Mainline U-Boot Howto](https://linux-sunxi.org/Mainline_U-Boot)
+ * [InstallingDebianOn/Allwinner](https://wiki.debian.org/InstallingDebianOn/Allwinner)
 
 Introduction to the new approaches
 ==================================
@@ -85,8 +87,14 @@ always include!) is supplied in directory `package-sample`. If you are fine
 with the configuration it provides, you can also try using it without
 modifications.
 
-New: Debian without external sources
-====================================
+New: Debian with minimal external sources
+=========================================
+
+Result
+:   Produces an image containing an OS as close to a “proper” Debian as
+    possible. Aside from the scripts provided here, only one non-Debian
+    component is used: The `u-boot-sunxi-with-spl.bin` is still
+    taken from armbian.
 
 This new approach consists of three major stages:
 
@@ -130,13 +138,27 @@ See <https://help.ubuntu.com/lts/serverguide/lxc.html#lxc-basic-usage>
     skipping or delaying the actual `s2_write_to_disk.sh`. For maximum security,
     execute this script directly after `s1_generate.sh`.
 
-The most complex part of the image generation (and the part which is likely to
-be wrong if the image does not boot!) is `s1_generate.sh` aka. the building of
-the root filesystem. Most of the work is delegated to `mmdebstrap`, but there
-are still numerous places to affect the execution. The following explains some
-common customization variables and gives a short idea on how further
-customization (like software selection and configuration files) are input into
-the process.
+## Common Points of Failure
+
+ * Invalid root filesystem generated.
+   In this case, carefully check if the custimization is correct and has been
+   applied (e.g. by checking the image's contents for customized files)
+ * Invalid boot loader configuration.
+   This is one of the hardest issues to debug properly and took most of the
+   scripts' development time. In case something is wrong with the bootloader
+   stage, two major directions can be checked:
+   (1) is the `u-boot-sunxi-with-spl.bin` correct?
+   One cannot really know, but (new) good u-boot binaries will show bootloader
+   output on HDMI.
+   (2) is the `boot.cmd` (and from that: `boot.scr`) correct?
+   It is quite hard to get this file right and one can still foreget to
+   re-generate `boot.scr` afterwards (hint: put an echo with a changing version
+   number in there and check if it occurs on-screen).
+   Note that message `Starting kernel...` without further progress can
+   be caused by either (1) or (2)!
+
+In any case, the method of debugging should be to try out different things and
+if they fail, attempt to “revert“ to a known good configuration.
 
 ## Customization Variables
 
@@ -156,15 +178,22 @@ Relevant customization variables are as follows (defaults given behind `=`)
     the default is OK here.
 `debian_version=buster`
 :   Configures the Debian release to use.
-`package_dir="$scriptroot/package-sample"`
+`package_dir="$scriptroot/package"`
 :   Gives a directory to build the customization package from.
     Note: This is expected to contain MDPC 2.0/ant-based instructions to
     build a package called `mdvl-banana-pi-m2-plus-edu-root`. It is recommended
-    to duplicate the existing `package-sample` and change the copy in case
-    an own customization package is needed.
+    to duplicate the existing `package` and change the copy in case an own
+    customization package is needed.
 `mirror=http://ftp.it.debian.org/debian`
 :   Configures the Debian mirror to use. Security will always point to
     `security.debian.org`.
+`adddep=,vim,aptitude,openssh-server,docker.io`
+:   A list of packages (comma-separated, without spaces, starting with a leading
+    comma) to install in addition to `mdvl-bamana-pi-m2-plus-edu-root`.
+`add_sources_list_line=`
+:   Configures an additional mirror to use. Together with `adddep`, this allows
+    arbitrarily customized packages to be input into the filesystem root
+    generation process.
 
 ## Customization Package
 
@@ -174,15 +203,12 @@ depend on kernel and other essential tools for running systems. Additionally,
 this package is responsible for providing essential configuration files like
 `/etc/network/interfaces` or `/etc/fstab`.
 
-The supplied `package-sample` directory contains the instructions for a package
+The supplied `package` directory contains the instructions for a package
 which creates an user `linux-fan` and sets passwords for `root` and `linux-fan`
-to `testwort`. It depends on `openssh-server` and hence allows the first
-interaction after successfully booting the new image to be a login through SSH
-as user `linux-fan` with password `testwort`. Note that it is recommended to
-change the passwords _after_ the package has set them because if one relies on
-the package for productive passwords, `linux-fan` can read `root`'s password
-from the DPKG status files (i.e. the `postinst` script is readable by all
-users...).
+to `testwort`. It is recommended to change the passwords _after_ the package has
+set them because if one relies on the package for productive passwords,
+`linux-fan` can read `root`'s password from the DPKG status files (i.e. the
+`postinst` script is readable by all users...).
 
 Introduction to the old approaches
 ==================================
@@ -214,6 +240,21 @@ microSD cards of any size (tested for 128 GB). Customizazion happens by
 supplying files in subdirectory `hostconfig` -- either in form of scripts or in
 form of files which are being copied to the target image.
 
+## Kernel Upgrading
+
+One of the tricky parts around bootloader configuration is the handling of
+kernel upgrades. Despite repeated attempts, no way of specifying the initramfs
+in its regular form (`initrd.img`) was found. Instead, this image needs to be
+converted to be usable by u-boot (`uInitrd`). To do this automatically upon
+kernel upgrades, script `y-masysma-gen-uboot-files` is supplied as part of the
+customization package. It attempts to automatically generate all boot-related
+files upon kernel upgrades (and initially). Noteworthy files are:
+
+ * `/boot/uInitrd-KERNEL` generated from `/boot/initrd.img-KERNEL` by `mkimage`
+ * `/boot/boot.cmd` generated from `/etc/masysma_template_boot.cmd`
+   (a known working configuration found through trial-and-error)
+ * `/boot/boot.scr` generated from `/boot/boot.cmd` by `mkimage`.
+
 Old: Combination Debian + Armbian Kernel
 ========================================
 
@@ -236,23 +277,29 @@ System requirements:
  * Docker
  * POSIX `make`
 
-External Resources
+External Resources (Debian Jessie)
 
  * `boot.bmp`
-   <https://raw.githubusercontent.com/igorpecovnik/lib/master/bin/splash/armbian-universal.bmp>
- * <http://apt.armbian.com/pool/main/l/linux-4.10.0-sun8i/>
  * `linux-dtb-dev-sun8i_5.26_armhf.deb`
  * `linux-firmware-image-dev-sun8i_5.26_armhf.deb`
  * `linux-headers-dev-sun8i_5.26_armhf.deb`
  * `linux-image-dev-sun8i_5.26_armhf.deb`
  * `linux-u-boot-dev-bananapim2plus_5.25_armhf.deb`
-   <http://apt.armbian.com/pool/main/l/linux-u-boot-bananapim2plus-dev/>
  * `linux-xenial-root-dev-bananapim2plus_5.25_armhf.deb`
-   <http://apt.armbian.com/pool/main/l/linux-xenial-root-bananapim2plus/>
 
-Obtain the files from the sources listed. Other versions might also work but
-have not been tested. If you want to use the hack for direct invocation (the
-system is also prepared to perform fully-automatic processing), provide the
+External Ressources (Debian Stretch)
+
+ * [`boot.bmp`](https://raw.githubusercontent.com/armbian/build/master/packages/blobs/splash/armbian-universal.bmp)
+ * [`linux-dtb-next-sunxi_5.70_armhf.deb`](https://apt.armbian.com/pool/main/l/linux-4.19.13-sunxi/linux-dtb-next-sunxi_5.70_armhf.deb)
+ * [`linux-headers-next-sunxi_5.70_armhf.deb`](https://apt.armbian.com/pool/main/l/linux-4.19.13-sunxi/linux-headers-next-sunxi_5.70_armhf.deb)
+ * [`linux-image-next-sunxi_5.70_armhf.deb`](https://apt.armbian.com/pool/main/l/linux-4.19.13-sunxi/linux-image-next-sunxi_5.70_armhf.deb)
+ * [`linux-u-boot-dev-bananapim2plus_5.70_armhf.deb`](https://apt.armbian.com/pool/main/l/linux-u-boot-bananapim2plus-dev/linux-u-boot-dev-bananapim2plus_5.70_armhf.deb)
+ * [`linux-xenial-root-bananapim2plus_5.73_armhf.deb`](https://apt.armbian.com/pool/main/l/linux-xenial-root-bananapim2plus/linux-xenial-root-bananapim2plus_5.73_armhf.deb)
+
+Obtain the files listed. In case the links do not work, remove the
+version-specific parts and search for similar files. Other versions might also
+work but have not been tested. If you want to use the hack for direct invocation
+(the system is also prepared to perform fully-automatic processing), provide the
 files downloaded in the `armbian` directory in the repository.
 
 Next, the image to be created has to be confgiured. This is done by creating a
@@ -363,6 +410,8 @@ Old: Debian + Vendor-Supplied legacy Kernel
 ===========================================
 
 Files or this approach can be found in directory `legacy_kernel`.
+_Note that these scripts have not been tested after their development in
+2017 again. It is unclear, if anything from this still works._
 
 Result
 :   This approach produces an image suited for a microSD card which contains a

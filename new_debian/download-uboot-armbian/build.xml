@@ -2,8 +2,14 @@
 <project default="download">
 
 <target name="download">
-	<masysma_require_artifact masysmaartifact="u-boot-sunxi-with-spl.bin.gz"
-		masysmaatarget="." masysmaadef="https://d-i.debian.org/daily-images/armhf/daily/u-boot/orangepi_plus/u-boot-sunxi-with-spl.bin.gz"/>
+	<masysma_require_artifact
+		masysmaartifact="linux-u-boot-dev-bananapim2plus-armhf.deb"
+		masysmaatarget="."
+		masysmaadef="https://apt.armbian.com/pool/main/l/linux-u-boot-bananapim2plus-dev/linux-u-boot-dev-bananapim2plus_5.70_armhf.deb"/>
+</target>
+
+<target name="dist-clean">
+	<delete dir="usr" failonerror="false"/>
 </target>
 
 <!-- CONSTANT TPL IMPORT -->

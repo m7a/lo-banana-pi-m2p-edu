@@ -77,6 +77,7 @@ echo
 
 echo "-- copy data --"
 mkdir "/media/microsd$$"
+# shellcheck disable=SC2064
 trap "rmdir /media/microsd$$" INT TERM EXIT
 mount "$partition_root" "/media/microsd$$"
 numpresent="$(find "/media/microsd$$" -mindepth 1 | wc -l)"
@@ -87,6 +88,19 @@ if [ "$numpresent" -gt 1 ]; then
 	exit 1
 fi
 pv "$wd/fsroot.tar" | tar -C "/media/microsd$$" -x
+echo
+
+echo "-- propagating root UUID --"
 cp "$wd/fstab" "/media/microsd$$/etc/fstab"
+echo s2_write_to_disk: attempting bootloader file re-generation...
+if chroot "/media/microsd$$" \
+			"/etc/kernel/postinst.d/y-masysma-gen-uboot-files"; then
+	echo s2_write_to_disk: bootloader regeneration SUCCESSFUL.
+else
+	echo s2_write_to_disk: bootloader regeneration FAILED. \
+		System attempts to boot from /dev/mmcblk0p1. \
+		Call /etc/kernel/postinst.d/y-masysma-gen-uboot-files \
+		manually if necessary.
+fi
 df -h
 umount "/media/microsd$$"
