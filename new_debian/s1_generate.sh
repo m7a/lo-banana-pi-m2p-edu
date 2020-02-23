@@ -12,8 +12,8 @@ wd="$scriptroot/wd"
 tmp_port=9842
 package_dir="$scriptroot/package"
 debian_version=buster
-#mirror=http://ftp.it.debian.org/debian
-mirror=http://192.168.1.16/debian
+mirror=http://ftp.de.debian.org/debian
+#mirror=http://192.168.1.16/debian
 adddep=",vim,aptitude,openssh-server,docker.io"
 add_sources_list_line=
 
