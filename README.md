@@ -5,7 +5,7 @@ title: Banana Pi M2+EDU Resources
 keywords: ["kb", "bananapi", "arm", "debian", "m2p", "blog", "bpi"]
 lang: en-US
 date: 2017/03/31 16:21:44
-x-masysma-version: 1.0.4
+x-masysma-version: 1.1.0
 x-masysma-copyright: |
   Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
@@ -52,7 +52,8 @@ Information on how to work with this single board computer is scattered
 around several sites. The following attempts to collect some useful links:
 
  * [Basic u-boot configuration hints](https://www.get-edi.io/Booting-Debian-with-U-Boot/)
- * Linux-Sunxi u-boot configuration: [Mainline U-Boot Howto](https://linux-sunxi.org/Mainline_U-Boot)
+ * Linux-Sunxi u-boot configuration:
+   [Mainline U-Boot Howto](https://linux-sunxi.org/Mainline_U-Boot)
  * [InstallingDebianOn/Allwinner](https://wiki.debian.org/InstallingDebianOn/Allwinner)
 
 Introduction to the new approaches
@@ -213,7 +214,7 @@ At the time of the creation of the “old” approaches, these solutions existed
 for Debian on a Banana Pi M2+EDU:
 
  * Debian-Images from the
-   [official Banana Pi website](http://www.banana-pi.org/m2plus-download.html):
+   [official Banana Pi website](http://wiki.banana-pi.org/Banana_Pi_BPI-M2%2B#Image_Release):
    These images are larger than necessary and only available with old kernels.
    Also, it is a bit unclear how those images can be created/customized.
  * [armbian](https://www.armbian.com/banana-pi-m2-plus/):
@@ -259,7 +260,7 @@ Result
 The steps used to build the image are formalized in the associated GIT
 Repository. It is recommended that you clone the repository as follows:
 
-	git clone https://github.com/m7a/lp-banana-pi-m2p-edu.git
+	git clone https://github.com/m7a/lo-banana-pi-m2p-edu
 
 System requirements:
 
@@ -411,7 +412,7 @@ Result
 
 First, clone the repository as follows:
 
-	git clone https://github.com/m7a/lp-banana-pi-m2p-edu
+	git clone https://github.com/m7a/lo-banana-pi-m2p-edu
 
 System requirements:
 
