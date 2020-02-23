@@ -1,15 +1,16 @@
 #!/bin/sh -e
 
-if [ "$1" = install ]; then
+if [ "$1" = configure ]; then
 	if ! grep -qE '^root:\$' /etc/shadow; then
-		echo setting root password...
+		echo mdvl-banana-pi-m2-plus-edu-root: setting root password...
 		( echo testwort; echo testwort ) | passwd
 	fi
 	if ! grep -qF linux-fan /etc/passwd; then
-		echo adding user linux-fan
+		echo mdvl-banana-pi-m2-plus-edu-root: adding user linux-fan...
 		useradd -m linux-fan
 		( echo testwort; echo testwort ) | passwd linux-fan
 	fi
+	echo mdvl-banana-pi-m2-plus-edu-root: generating system files...
 	echo bananapim2p > /etc/hostname
 	echo nameserver 8.8.4.4 > /etc/resolv.conf
 	cat > /etc/network/interfaces <<EOF
@@ -20,5 +21,9 @@ allow-hotplug eth0
 auto eth0
 iface eth0 inet dhcp
 EOF
-	/etc/kernel/postinst.d/y-masysma-gen-uboot-files
+	echo mdvl-banana-pi-m2-plus-edu-root: invoking gen-uboot-files...
+	mkdir -p /etc/kernel/postinst.d
+	ln -s /usr/sbin/masysma-gen-uboot-files \
+				/etc/kernel/postinst.d/y-masysma-gen-uboot-files
+	/usr/sbin/masysma-gen-uboot-files
 fi

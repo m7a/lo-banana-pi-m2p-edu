@@ -14,7 +14,7 @@
 </property>
 <property name="mdpc.file.install">
 masysma_template_boot.cmd /etc
-y-masysma-gen-uboot-files /etc/kernel/postinst.d
+masysma-gen-uboot-files /usr/sbin
 </property>
 
 <target name="build"/>

@@ -80,10 +80,10 @@ trap "kill -s TERM $pypid" INT TERM EXIT
 echo
 
 echo "-- calling mmdebstrap --"
+echo "logfile=$wd/mmdebstrap.txt"
 mmdebstrap --architectures=armhf --components=main,contrib,non-free \
-	--variant=important \
-	"--include=mdvl-banana-pi-m2-plus-edu-root$adddep" \
-	--mode=unshare \
+	--verbose --logfile="$wd/mmdebstrap.txt" --variant=important \
+	"--include=mdvl-banana-pi-m2-plus-edu-root$adddep" --mode=unshare \
 	> "$wd/fsroot.tar" <<EOF
 deb $mirror $debian_version main contrib non-free
 deb $mirror $debian_version-updates main contrib non-free
@@ -91,3 +91,11 @@ deb http://security.debian.org/ buster/updates main contrib non-free
 deb http://127.0.0.1:$tmp_port/ squeeze main contrib non-free
 $add_sources_list_line
 EOF
+rv=$?
+printf "%s" "mmdebstrap returned $rv -- "
+if [ "$rv" = 0 ]; then
+	echo image generation completed successfully.
+else
+	echo image generation FAILED. Check the logs for details. \
+		The image may not be bootable.
+fi

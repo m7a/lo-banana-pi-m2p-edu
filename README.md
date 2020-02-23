@@ -9,20 +9,10 @@ x-masysma-version: 1.0.4
 x-masysma-copyright: |
   Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
-x-masysma-repository: https://www.github.com/m7a/lp-banana-pi-m2p-edu
+x-masysma-repository: https://www.github.com/m7a/lo-banana-pi-m2p-edu
 x-masysma-website: https://masysma.lima-city.de/37/banana_pi_m2_plus_edu.xhtml
 x-masysma-owned: 1
 ---
-WARNING: Work-in-Progress
-=========================
-
-2020/02/l3: At least parts of the scripts have ceased to work.
-Additionally, there might by now be a means to build everything wholly on Debian
-resources, but the details of this have not been found out yet.
-
-2020/02/14: New scripts are being developed. The document might be incomplete
-until the new scripts are tested properly.
-
 Introduction: Debian on the Banana Pi M2+EDU
 ============================================
 
