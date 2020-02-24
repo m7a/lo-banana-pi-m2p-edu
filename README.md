@@ -5,7 +5,7 @@ title: Banana Pi M2+EDU Resources
 keywords: ["kb", "bananapi", "arm", "debian", "m2p", "blog", "bpi"]
 lang: en-US
 date: 2017/03/31 16:21:44
-x-masysma-version: 1.1.0
+x-masysma-version: 1.1.1
 x-masysma-copyright: |
   Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
@@ -59,9 +59,9 @@ around several sites. The following attempts to collect some useful links:
 Introduction to the new approaches
 ==================================
 
-The “new approach” relies solely on data provided through Debian. This allows
-for a very stable result and enables the maximum benefits which usually come
-with a Debian system: Easy upgrades between releases, security fixes etc.
+The “new approach” attempts to rely solely on data provided by Debian. This
+allows for a very stable result and enables the maximum benefits which usually
+come with a Debian system: Easy upgrades between releases, security fixes etc.
 
 The scripts for this approach are found in directory `new_debian_only` and
 are intended to be invoked “in sequence“ as numbered. Build operations take
@@ -84,8 +84,7 @@ New: Debian with minimal external sources
 Result
 :   Produces an image containing an OS as close to a “proper” Debian as
     possible. Aside from the scripts provided here, only one non-Debian
-    component is used: The `u-boot-sunxi-with-spl.bin` is still
-    taken from armbian.
+    component is used: The `u-boot-sunxi-with-spl.bin` from armbian.
 
 This new approach consists of three major stages:
 
@@ -120,10 +119,7 @@ See <https://help.ubuntu.com/lts/serverguide/lxc.html#lxc-basic-usage>
     mirror or Debian version, you can pass a script file as parameter which
     is being sourced. See _Customization Variables_ below.
 `s2_write_to_disk.sh` (as root)
-:   Writes the prepared files to a MicroSD card. Note that in case you do not
-    want to rely on the automatism, it is perfectly reasonable to do the step
-    “by hand”. See the source code or the old instructions for
-    _Debian + armbian Kernel_ for ideas on how to do this.
+:   Writes the prepared files to a MicroSD card and updates the bootloader.
 `s3_close_userns.sh`
 :   Reverts the setting performed in `s0`. It is a separate step to permit
     skipping or delaying the actual `s2_write_to_disk.sh`. For maximum security,
@@ -141,15 +137,15 @@ See <https://help.ubuntu.com/lts/serverguide/lxc.html#lxc-basic-usage>
    (1) is the `u-boot-sunxi-with-spl.bin` correct?
    One cannot really know, but (new) good u-boot binaries will show bootloader
    output on HDMI.
-   (2) is the `boot.cmd` (and from that: `boot.scr`) correct?
-   It is quite hard to get this file right and one can still foreget to
-   re-generate `boot.scr` afterwards (hint: put an echo with a changing version
-   number in there and check if it occurs on-screen).
+   (2) is the bootloader configuration correct?
+   It is quite hard to get configuration right by hand. However, Debian package
+   `u-boot-menu` provides an automatism which can be invoked by
+   `/usr/sbin/u-boot-update` to generate a configuration
+   `/boot/extlinux/extlinux.conf` which (despite its name) can be processed by
+   u-boot. The first step is to check the file's existence and if it contains
+   proper `UUID` of the microSD card's first partition.
    Note that message `Starting kernel...` without further progress can
    be caused by either (1) or (2)!
-
-In any case, the method of debugging should be to try out different things and
-if they fail, attempt to “revert“ to a known good configuration.
 
 ## Customization Variables
 
