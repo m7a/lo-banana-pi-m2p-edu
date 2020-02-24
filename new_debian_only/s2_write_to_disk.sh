@@ -39,10 +39,6 @@ start=$((data_mib + 1))MiB size=${swap_size_mib}MiB type=82
 EOF
 echo
 
-echo "-- install bootloader --"
-dd "if=$wd/u-boot-sunxi-with-spl.bin" "of=$output_device" bs=1024 seek=8
-echo
-
 echo "-- detect and format partitions --"
 # find partition to mount
 partition_root=NONEXISTENT_FILE
@@ -88,6 +84,12 @@ if [ "$numpresent" -gt 1 ]; then
 	exit 1
 fi
 pv "$wd/fsroot.tar" | tar -C "/media/microsd$$" -x
+if ! [ -f "$wd/u-boot-sunxi-with-spl.bin" ]; then
+	echo copying bootloader binary from installed system...
+	cp "/media/microsd$$/usr/lib/u-boot/orangepi_plus/u-boot-sunxi-with-spl.bin" "$wd/u-boot-sunxi-with-spl.bin"
+	# allow r/w by regular user...
+	chmod 666 "$wd/u-boot-sunxi-with-spl.bin"
+fi
 echo
 
 echo "-- propagating root UUID --"
@@ -97,3 +99,7 @@ echo s2_write_to_disk: attempting bootloader file re-generation...
 chroot "/media/microsd$$" "/usr/sbin/u-boot-update"
 df -h
 umount "/media/microsd$$"
+
+echo "-- install bootloader --"
+dd "if=$wd/u-boot-sunxi-with-spl.bin" "of=$output_device" bs=1024 seek=8
+echo

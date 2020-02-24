@@ -27,19 +27,6 @@ fi
 
 [ -d "$wd" ] || mkdir "$wd"
 
-if ! [ -f "$wd/u-boot-sunxi-with-spl.bin" ]; then
-	echo "-- download u-boot --"
-	echo "logfile=$wd/download-uboot-armbian.txt"
-	cp -r "$scriptroot/download-uboot-armbian" "$wd"
-	cd "$wd/download-uboot-armbian"
-	ant download > "$wd/download-uboot-armbian.txt" 2>&1
-	ubootsplbin="$(find "$wd/download-uboot-armbian" -type f \
-					-name u-boot-sunxi-with-spl.bin)"
-	mv "$ubootsplbin" "$wd"
-	ant dist-clean >> "$wd/download-uboot-armbian.txt" 2>&1
-	echo
-fi
-
 if ! [ -d "$wd/repo/conf" ]; then
 	echo "-- build package --"
 	echo "package_dir=$package_dir"

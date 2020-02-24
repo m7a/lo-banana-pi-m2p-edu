@@ -21,14 +21,16 @@ article describes means of getting to run Debian on the Banana Pi M2+EDU.
 
 The approach presented here tries to get an installation as close to an
 _unmodified_ Debian as possible. In the past, this did not seem possible and
-thus, some minor deviations were accepted.
+thus, some minor deviations were accepted. As of 2020/02/24, a working
+approach is known and presented under section
+_New: Debian without external sources_.
 
 Overview
 ========
 
 This document describes three distinct approaches:
 
- 1. A new approach to use Debian with only minimal external sources.
+ 1. A new approach to use Debian without external sources.
     The solution proposed here does not involve the Debian installer, but
     relies on bootstrapping an image suitable to be copied onto a MicroSD
     card which can then boot on the board.
@@ -56,12 +58,17 @@ around several sites. The following attempts to collect some useful links:
    [Mainline U-Boot Howto](https://linux-sunxi.org/Mainline_U-Boot)
  * [InstallingDebianOn/Allwinner](https://wiki.debian.org/InstallingDebianOn/Allwinner)
 
+Mailing list questions:
+
+ * [Getting Started](https://lists.debian.org/debian-user/2020/02/msg00597.html)
+ * [Towards Debian-only Solution](https://alioth-lists.debian.net/pipermail/blend-tinker-devel/2020-February/000024.html)
+
 Introduction to the new approaches
 ==================================
 
-The “new approach” attempts to rely solely on data provided by Debian. This
-allows for a very stable result and enables the maximum benefits which usually
-come with a Debian system: Easy upgrades between releases, security fixes etc.
+The “new approach” relies solely on data provided by Debian. This allows for a
+very stable result and enables the maximum benefits which usually come with a
+Debian system: Easy upgrades between releases, security fixes etc.
 
 The scripts for this approach are found in directory `new_debian_only` and
 are intended to be invoked “in sequence“ as numbered. Build operations take
@@ -78,13 +85,12 @@ always include!) is supplied in directory `package-sample`. If you are fine
 with the configuration it provides, you can also try using it without
 modifications.
 
-New: Debian with minimal external sources
-=========================================
+New: Debian without external sources
+====================================
 
 Result
-:   Produces an image containing an OS as close to a “proper” Debian as
-    possible. Aside from the scripts provided here, only one non-Debian
-    component is used: The `u-boot-sunxi-with-spl.bin` from armbian.
+:   Produces an image containing a “proper” Debian. Aside from the scripts
+    provided here, only a Debian mirror and host system are needed.
 
 This new approach consists of three major stages:
 
@@ -114,10 +120,10 @@ See <https://help.ubuntu.com/lts/serverguide/lxc.html#lxc-basic-usage>
 (section _User namespaces_) for details.
 
 `s1_generate.sh` (as user)
-:   Performs most of the preparation and builds a root filesystem in
-    output file `wd/fsroot.tar`. To set different variables (e.g. configure
-    mirror or Debian version, you can pass a script file as parameter which
-    is being sourced. See _Customization Variables_ below.
+:   Builds a root filesystem in output file `wd/fsroot.tar`. To set different
+    variables (e.g. configure mirror or Debian version, you can pass a script
+    file as parameter which is being sourced. See section
+    _Customization Variables_ for details.
 `s2_write_to_disk.sh` (as root)
 :   Writes the prepared files to a MicroSD card and updates the bootloader.
 `s3_close_userns.sh`
@@ -130,6 +136,7 @@ See <https://help.ubuntu.com/lts/serverguide/lxc.html#lxc-basic-usage>
  * Invalid root filesystem generated.
    In this case, carefully check if the custimization is correct and has been
    applied (e.g. by checking the image's contents for customized files)
+
  * Invalid boot loader configuration.
    This is one of the hardest issues to debug properly and took most of the
    scripts' development time. In case something is wrong with the bootloader
@@ -196,6 +203,57 @@ to `testwort`. It is recommended to change the passwords _after_ the package has
 set them because if one relies on the package for productive passwords,
 `linux-fan` can read `root`'s password from the DPKG status files (i.e. the
 `postinst` script is readable by all users...).
+
+## Technical Details
+
+While `s0_open_userns.sh` and `s3_close_userns.sh` are reasonably “trivial”,
+the other two scripts might not be as easy to understand. The script's content
+is summarized in bullet points in the following as to serve as a means to
+create your own scripts or understand the existing ones better:
+
+### `s1_generate.sh`
+
+ * Obtain configuration values: working directory, port, version, mirror,
+   additional packages and package sources to install
+ * Create package from directory `package` (using MDPC 2.0, see
+   [masysmaci/build(32)](../32/masysmaci_build.xml) for details).
+ * Create temporary repository which contains the package.
+ * Invoke `mmdebstrap` to generate a root filesystem `fsroot.tar`
+   with the generated package installed. By installing the generated package,
+   dependencies are pulled in and default users and passwords are created.
+
+### `s2_write_to_disk.sh`
+
+ * detect device size and set 1 GiB of swap space and the remainder for the
+   root filesystem.
+ * create a suitable partition table with `sfdisk` leaving the first MiB free
+   (for bootloader)
+ * detect partition device files
+ * format partitions with defined UUIDs and generate a suitable `fstab`
+ * mount the formatted root filesystem
+ * extract generated `fsroot.tar` to the root filesystem
+ * extract `u-boot-sunxi-with-spl.bin` from the root filesystem
+   (which contains this file as provided by package `u-boot-sunxi`)
+ * copy the newly generated `fstab` to `/etc/fstab`
+ * re-generate bootloader configuration to make the boot process aware of the
+   UUIDs to use.
+ * umount root filesystem
+ * install extracted `u-boot-sunxi-with-spl.bin`
+
+## Known Issues
+
+As of now, the following issues are known:
+
+ * The root filesystem generated needs to be “post-processed” in a way that
+   UUIDs are set for bootloader and `/etc/fstab`. Use cases with
+   `/dev/mmcblk0p1` are currently untested. They are known to work with
+   `masysma-gen-uboot-files`, however.
+ * An external USB keyboard is not recognized on the Linux console.
+   Other USB devices may not work, either (TBD).
+   When using an armbian-provided bootloader instead, it works.
+   Thus, if this is important for you, consider using an armbian-provided
+   `u-boot-sunxi-with-spl.bin` (as can be downloaded with the `ant` script
+   under `xond_uboot_files/download-uboot-armbian`).
 
 Introduction to the old approaches
 ==================================
