@@ -21,9 +21,4 @@ allow-hotplug eth0
 auto eth0
 iface eth0 inet dhcp
 EOF
-	echo mdvl-banana-pi-m2-plus-edu-root: invoking gen-uboot-files...
-	mkdir -p /etc/kernel/postinst.d
-	ln -s /usr/sbin/masysma-gen-uboot-files \
-				/etc/kernel/postinst.d/y-masysma-gen-uboot-files
-	/usr/sbin/masysma-gen-uboot-files
 fi

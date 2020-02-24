@@ -93,13 +93,7 @@ echo
 echo "-- propagating root UUID --"
 cp "$wd/fstab" "/media/microsd$$/etc/fstab"
 echo s2_write_to_disk: attempting bootloader file re-generation...
-if chroot "/media/microsd$$" "/usr/sbin/masysma-gen-uboot-files"; then
-	echo s2_write_to_disk: bootloader regeneration SUCCESSFUL.
-else
-	echo s2_write_to_disk: bootloader regeneration FAILED. \
-		System attempts to boot from /dev/mmcblk0p1. \
-		Call /etc/kernel/postinst.d/y-masysma-gen-uboot-files \
-		manually if necessary.
-fi
+# No longer optional, needs to happen because there is no fall back from UUID.
+chroot "/media/microsd$$" "/usr/sbin/u-boot-update"
 df -h
 umount "/media/microsd$$"

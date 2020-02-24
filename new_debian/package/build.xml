@@ -5,17 +5,13 @@
 <property name="mdpc.name"    value="mdvl-banana-pi-m2-plus-edu-root"/>
 <property name="mdpc.section" value="admin"/>
 <property name="mdpc.arch"    value="all"/>
-<property name="mdpc.depends" value="sunxi-tools, firmware-linux, debconf, locales, u-boot-sunxi, u-boot, u-boot-tools, linux-image-armmp-lpae"/>
+<property name="mdpc.depends" value="sunxi-tools, firmware-linux, debconf, locales, u-boot-sunxi, u-boot, u-boot-tools, u-boot-menu, linux-image-armmp-lpae"/>
 <property name="mdpc.descrs"  value="system management root package"/>
 <property name="mdpc.descrl">
  Root package for Banana Pi M2+EDU system.
- Pulls in all system essential packages and
- provides hooks to enable successful kernel upgrades.
+ Pulls in all system essential packages.
 </property>
-<property name="mdpc.file.install">
-masysma_template_boot.cmd /etc
-masysma-gen-uboot-files /usr/sbin
-</property>
+<property name="mdpc.file.install" value=""/>
 
 <target name="build"/>
 

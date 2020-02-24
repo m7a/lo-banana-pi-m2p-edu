@@ -3,6 +3,9 @@
 # Version 1.0.1, Copyright (c) 2020 Ma_Sys.ma.
 # For further info send an e-mail to Ma_Sys.ma@web.de.
 #
+# NOTE: This script's functionality is provided by Debian package
+# u-boot-menu. There is thus no need to use this!
+#
 # Upon updates, the following files need to be re-generated with updated data
 # /boot/boot.cmd, /boot/boot.scr, /boot/uImage-$kernelversion
 #
