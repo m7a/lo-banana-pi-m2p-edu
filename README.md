@@ -216,7 +216,7 @@ create your own scripts or understand the existing ones better:
  * Obtain configuration values: working directory, port, version, mirror,
    additional packages and package sources to install
  * Create package from directory `package` (using MDPC 2.0, see
-   [masysmaci/build(32)](../32/masysmaci_build.xml) for details).
+   [masysmaci/build(32)](../32/masysmaci_build.xhtml) for details).
  * Create temporary repository which contains the package.
  * Invoke `mmdebstrap` to generate a root filesystem `fsroot.tar`
    with the generated package installed. By installing the generated package,
