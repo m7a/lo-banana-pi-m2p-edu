@@ -5,12 +5,13 @@ title: Banana Pi M2+EDU Resources
 keywords: ["kb", "bananapi", "arm", "debian", "m2p", "blog", "bpi"]
 lang: en-US
 date: 2017/03/31 16:21:44
+author: ["Linux-Fan, Ma_Sys.ma (Ma_Sys.ma@web.de)"]
 x-masysma-version: 1.1.1
 x-masysma-copyright: |
   Copyright (c) 2017, 2018, 2020 Ma_Sys.ma.
   For furhter info send an e-mail to Ma_Sys.ma@web.de.
 x-masysma-repository: https://www.github.com/m7a/lo-banana-pi-m2p-edu
-x-masysma-website: https://masysma.lima-city.de/37/banana_pi_m2_plus_edu.xhtml
+x-masysma-website: https://masysma.net/37/banana_pi_m2_plus_edu.xhtml
 x-masysma-owned: 1
 ---
 Introduction: Debian on the Banana Pi M2+EDU
