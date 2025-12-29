@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+#DEBHELPER#
+
 if [ "$1" = configure ]; then
 	if ! grep -qE '^root:\$' /etc/shadow; then
 		echo mdvl-banana-pi-m2-plus-edu-root: setting root password...
@@ -17,8 +19,8 @@ if [ "$1" = configure ]; then
 auto lo
 iface lo inet loopback
 
-allow-hotplug eth0
-auto eth0
-iface eth0 inet dhcp
+allow-hotplug end0
+auto end0
+iface end0 inet dhcp
 EOF
 fi

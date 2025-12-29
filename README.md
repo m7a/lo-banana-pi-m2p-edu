@@ -185,10 +185,6 @@ Relevant customization variables are as follows (defaults given behind `=`)
 `adddep=,vim,aptitude,openssh-server,docker.io`
 :   A list of packages (comma-separated, without spaces, starting with a leading
     comma) to install in addition to `mdvl-bamana-pi-m2-plus-edu-root`.
-`add_sources_list_line=`
-:   Configures an additional mirror to use. Together with `adddep`, this allows
-    arbitrarily customized packages to be input into the filesystem root
-    generation process.
 
 ## Customization Package
 

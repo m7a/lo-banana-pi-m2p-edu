@@ -96,10 +96,11 @@ echo "-- propagating root UUID --"
 cp "$wd/fstab" "/media/microsd$$/etc/fstab"
 echo s2_write_to_disk: attempting bootloader file re-generation...
 # No longer optional, needs to happen because there is no fall back from UUID.
-chroot "/media/microsd$$" "/usr/sbin/u-boot-update"
+chroot "/media/microsd$$" /usr/sbin/u-boot-update
 df -h
+ls -l "/media/microsd$$"
 umount "/media/microsd$$"
 
 echo "-- install bootloader --"
-dd "if=$wd/u-boot-sunxi-with-spl.bin" "of=$output_device" bs=1024 seek=8
+dd "if=$wd/u-boot-sunxi-with-spl.bin" "of=$output_device" bs=1024 seek=8 conv=notrunc
 echo

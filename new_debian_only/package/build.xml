@@ -5,13 +5,14 @@
 <property name="mdpc.name"    value="mdvl-banana-pi-m2-plus-edu-root"/>
 <property name="mdpc.section" value="admin"/>
 <property name="mdpc.arch"    value="all"/>
-<property name="mdpc.depends" value="sunxi-tools, firmware-linux, debconf, locales, u-boot-sunxi, u-boot, u-boot-tools, u-boot-menu, linux-image-armmp-lpae"/>
+<property name="mdpc.depends" value="sunxi-tools, debconf, locales, u-boot-sunxi, u-boot-tools, u-boot-menu, linux-image-armmp-lpae, isc-dhcp-client, openssh-server"/>
 <property name="mdpc.descrs"  value="system management root package"/>
 <property name="mdpc.descrl">
  Root package for Banana Pi M2+EDU system.
  Pulls in all system essential packages.
 </property>
-<property name="mdpc.file.install" value=""/>
+<property name="mdpc.file.install" value="u-boot.mdvl /etc/default"/>
+<property name="mdpc.file.displace" value="/etc/default/u-boot.mdvl"/>
 
 <target name="build"/>
 
