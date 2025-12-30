@@ -8,11 +8,10 @@ MDVL_CI_PHOENIX_ROOT="$(cd "$scriptroot/../.." && pwd)"
 export MDVL_CI_PHOENIX_ROOT
 
 wd="$scriptroot/wd"
-tmp_port=9842
 package_dir="$scriptroot/package"
 debian_version=trixie
-#mirror=http://ftp.de.debian.org/debian
-mirror=http://192.168.128.1/debian
+mirror=http://ftp.de.debian.org/debian
+#mirror=http://192.168.128.1/debian
 adddep="vim,aptitude,docker.io"
 
 if [ "$1" = "--help" ]; then

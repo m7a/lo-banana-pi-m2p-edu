@@ -1,0 +1,29 @@
+systemctl enable docker
+systemctl start docker
+dpkg-reconfigure locales
+dpkg-reconfigure tzdata
+systemctl enable systemd-timesyncd.service
+systemctl start systemd-timesyncd.service
+dpkg-reconfigure exim4
+
+apt-get install locales initramfs-tools u-boot-tools xz-utils make
+update-initramfs -k 4.10.0-sun8i -c
+mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initrd.img-4.10.0-sun8i /boot/uInitrd-4.10.0-sun8i
+ln -sf /boot/uInitrd-4.10.0-sun8i /boot/uInitrd
+cp /usr/share/armbian/armbianEnv.txt /boot
+cp /usr/share/armbian/boot.cmd /boot
+cp /boot/bin/bananapim2plus.bin /boot/script.bin
+mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
+# dpkg-deb -x linux-xenial-root-dev-bananapim2plus_5.25_armhf.deb .
+
+
+--
+
+switch passwords
+sync files from previous state (/home/backupuser)
+load container
+start container
+install auto upgrade
+clean sources list
+dpkg-reconfigure exim4-conf
+edit /etc/hosts to contain localhost name variants (masysma-12 masysma-12.masysma.org)
